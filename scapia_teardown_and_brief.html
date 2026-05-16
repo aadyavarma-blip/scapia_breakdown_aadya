@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scapia — Product Teardown + Brief</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:         #0b0f1a;
+    --navy-mid:     #141929;
+    --navy-card:    #1a2035;
+    --navy-border:  #252d45;
+    --navy-muted:   #3d4a6b;
+
+    --gold:         #c9922a;
+    --gold-light:   #e8b84b;
+    --gold-pale:    #fdf3dc;
+    --gold-border:  #4a3a18;
+
+    --white:        #ffffff;
+    --off-white:    #f0eeea;
+    --body:         #c8ccd8;
+    --muted:        #7a8299;
+    --border:       #252d45;
+    --border-light: #1e2640;
+
+    --green:        #1a8a4a;
+    --green-bg:     #0f2a1a;
+    --green-border: #1d4a2a;
+    --red:          #c0392b;
+    --red-bg:       #2a1010;
+  }
+
+  body {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 13.5px;
+    color: var(--body);
+    background: var(--navy);
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 56px 48px 80px;
+    line-height: 1.65;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 44px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--gold);
+  }
+  .header-left .label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .header-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 40px;
+    line-height: 1.08;
+    color: var(--white);
+  }
+  .header-left h1 em { font-style: italic; color: var(--gold-light); }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 14px;
+    background: var(--gold);
+    color: var(--navy);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 5px 13px;
+    border-radius: 99px;
+    letter-spacing: .04em;
+  }
+  .header-badge .live { width: 5px; height: 5px; border-radius: 50%; background: var(--navy); }
+  .header-right {
+    text-align: right;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 2;
+    margin-top: 4px;
+  }
+  .header-right strong { display: block; font-size: 13px; color: var(--gold-light); font-weight: 600; }
+
+  /* ── Section ── */
+  section { margin-bottom: 40px; }
+  .section-title {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 0.5px; background: var(--border); }
+
+  /* ── Page break ── */
+  .page-break {
+    border: none;
+    border-top: 1px dashed var(--navy-border);
+    margin: 52px 0;
+    position: relative;
+  }
+  .page-break-label {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: -44px 0 44px;
+    padding: 8px 0;
+  }
+
+  /* ── Snapshot ── */
+  .snapshot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .snap-card {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: 10px;
+    padding: 18px 14px;
+  }
+  .snap-card .num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 25px;
+    color: var(--gold-light);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .snap-card .desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
+
+  /* ── Layouts ── */
+  .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── Card ── */
+  .card {
+    border: 1px solid var(--navy-border);
+    border-radius: 10px;
+    padding: 18px;
+    background: var(--navy-card);
+  }
+  .card h3 { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--white); }
+
+  /* ── Lists ── */
+  ul.clean { list-style: none; }
+  ul.clean li {
+    font-size: 12.5px;
+    color: var(--body);
+    padding: 5px 0;
+    border-bottom: 0.5px solid var(--border-light);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+  ul.clean li:last-child { border-bottom: none; }
+  ul.clean li .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--gold);
+    margin-top: 7px; flex-shrink: 0;
+  }
+  ul.clean li .dot-green { background: var(--green); }
+  ul.clean li .dot-red   { background: var(--red); }
+
+  /* ── Pull quote ── */
+  .pull-quote {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16.5px;
+    font-style: italic;
+    color: var(--gold-light);
+    border-left: 2px solid var(--gold);
+    padding: 4px 16px;
+    margin: 18px 0 6px;
+    line-height: 1.55;
+  }
+
+  /* ── Competitor table ── */
+  .moat-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .moat-table thead tr { background: var(--gold); }
+  .moat-table th {
+    text-align: left;
+    font-weight: 700;
+    font-size: 10px;
+    color: var(--navy);
+    padding: 8px 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .moat-table td {
+    padding: 9px 12px;
+    border-bottom: 0.5px solid var(--border-light);
+    vertical-align: top;
+    line-height: 1.55;
+  }
+  .moat-table tr:last-child td { border-bottom: none; }
+  .moat-table tr:nth-child(even) td { background: var(--navy-card); }
+  .moat-table td:first-child { font-weight: 600; color: var(--white); width: 20%; }
+  .moat-table td:nth-child(2) { color: var(--body); width: 40%; }
+  .moat-table td:last-child   { color: var(--muted); width: 40%; }
+
+  /* ── Strengths/gaps ── */
+  .sg-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .sg-green { color: #4aab6a; }
+  .sg-red   { color: #e05c5c; }
+
+  /* ════════════════════════════
+     PRODUCT BRIEF STYLES
+  ════════════════════════════ */
+
+  .brief-hero {
+    background: var(--navy-card);
+    border: 1px solid var(--gold-border);
+    border-radius: 14px;
+    padding: 28px 28px 24px;
+    margin-bottom: 20px;
+  }
+  .brief-hero .eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .brief-hero h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .brief-hero h2 em { font-style: italic; color: var(--gold-light); }
+  .brief-hero .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .brief-meta {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .meta-pill {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 99px;
+    border: 1px solid var(--gold-border);
+    color: var(--gold-light);
+    background: rgba(201,146,42,0.08);
+  }
+
+  /* Brief sections */
+  .brief-block {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 14px;
+  }
+  .brief-block h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .brief-block p {
+    font-size: 13px;
+    color: var(--body);
+    line-height: 1.7;
+  }
+  .brief-block p + p { margin-top: 8px; }
+  .brief-block strong { color: var(--white); }
+
+  /* User insight quote */
+  .insight-box {
+    background: rgba(201,146,42,0.06);
+    border: 1px solid var(--gold-border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 12px 0;
+  }
+  .insight-box p {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 14.5px;
+    color: var(--gold-light);
+    line-height: 1.6;
+  }
+  .insight-box .attr {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-style: normal;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* Solution flow */
+  .flow {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .flow-step {
+    background: var(--navy);
+    border: 1px solid var(--navy-border);
+    border-radius: 10px;
+    padding: 14px 14px 12px;
+    position: relative;
+  }
+  .flow-step .step-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .flow-step h4 { font-size: 12.5px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+  .flow-step p  { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+  /* Metrics table */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .metric-card {
+    background: var(--navy);
+    border: 1px solid var(--navy-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .metric-card .label { font-size: 10.5px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+  .metric-card .value { font-size: 13px; color: var(--white); font-weight: 600; }
+  .metric-card .why { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+  /* Resume tie */
+  .resume-tie {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: rgba(201,146,42,0.05);
+    border-left: 2px solid var(--gold);
+    border-radius: 0 6px 6px 0;
+    font-size: 12px;
+    color: var(--gold-light);
+    line-height: 1.6;
+    display: flex;
+    gap: 8px;
+  }
+  .resume-tie::before { content: '↳'; flex-shrink: 0; font-weight: 700; }
+
+  /* Pills */
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .pill { font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 99px; border: 1px solid; }
+  .pill-gold  { background: rgba(201,146,42,0.1); color: var(--gold-light); border-color: var(--gold-border); }
+  .pill-green { background: var(--green-bg); color: #4aab6a; border-color: var(--green-border); }
+  .pill-muted { background: var(--navy-card); color: var(--muted); border-color: var(--border); }
+
+  /* Fit box */
+  .fit-box {
+    background: var(--gold);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-top: 14px;
+  }
+  .fit-box p { font-size: 13px; color: var(--navy); line-height: 1.75; }
+  .fit-box strong { color: var(--navy); font-weight: 700; }
+
+  /* Footer */
+  .footer {
+    margin-top: 52px;
+    padding-top: 18px;
+    border-top: 0.5px solid var(--border);
+    font-size: 11px;
+    color: var(--navy-muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media print {
+    body {
+      padding: 32px 40px;
+      background: #0b0f1a !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    /* Only protect atomic units — single cards, not whole grids */
+    .snap-card, .card, .brief-block, .brief-hero,
+    .flow-step, .metric-card, .insight-box,
+    .fit-box, .resume-tie {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+    /* Keep section titles glued to the first line of content below */
+    .section-title { break-after: avoid !important; }
+    /* Table rows shouldn't split */
+    .moat-table tr { break-inside: avoid !important; }
+    /* Grids and sections CAN break — prevents giant gaps */
+    .snapshot-grid, .two-col, .three-col,
+    .flow, .metrics-grid, .pill-row, section { break-inside: auto !important; }
+    /* Natural page break at the divider between teardown and brief */
+    .page-break { break-before: page !important; }
+    html {
+      background: #0b0f1a !important;
+      margin: 0; padding: 0;
+    }
+    @page {
+      margin: 16mm 14mm;
+      background: #0b0f1a;
+    }
+    /* Tighten spacing for print so pages fill naturally */
+    section { margin-bottom: 22px !important; }
+    .brief-block { margin-bottom: 10px !important; }
+    .snapshot-grid, .two-col, .three-col { gap: 8px !important; }
+    .flow { gap: 8px !important; }
+    .metrics-grid { gap: 8px !important; }
+    .brief-hero { margin-bottom: 12px !important; }
+    .pull-quote { margin: 10px 0 4px !important; }
+    h1 { font-size: 32px !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ PART 1: TEARDOWN ═══════════ -->
+
+<div class="header">
+  <div class="header-left">
+    <div class="label">Product Teardown + Brief — APM Application</div>
+    <h1>Scapia<br><em>Travel Fintech for India's Next Generation</em></h1>
+    <div class="header-badge">
+      <span class="live"></span>
+      scapia.cards · Bengaluru · Series B
+    </div>
+  </div>
+  <div class="header-right">
+    <strong>May 2026</strong>
+    Co-branded Travel Credit Card<br>
+    Federal Bank + BOBCARD<br>
+    Peak XV · Elevation · Z47
+  </div>
+</div>
+
+<!-- Snapshot -->
+<section>
+  <div class="section-title">At a glance</div>
+  <div class="snapshot-grid">
+    <div class="snap-card">
+      <div class="num">$40M</div>
+      <div class="desc">Series B led by Peak XV (Apr 2025) · Total raised ~$72M</div>
+    </div>
+    <div class="snap-card">
+      <div class="num">100+</div>
+      <div class="desc">Countries Scapia cardholders travelled to in the past year</div>
+    </div>
+    <div class="snap-card">
+      <div class="num">50%</div>
+      <div class="desc">Of all new credit card issuance in India — Gen Z & Millennials</div>
+    </div>
+    <div class="snap-card">
+      <div class="num">$100B</div>
+      <div class="desc">Travel fintech revenue opportunity in India by 2030</div>
+    </div>
+  </div>
+</section>
+
+<!-- What Scapia is -->
+<section>
+  <div class="section-title">What Scapia is building</div>
+  <div class="two-col">
+    <div>
+      <p style="font-size:13px; line-height:1.75; margin-bottom:12px;">
+        Scapia is building India's first <strong style="color:var(--white);">travel-native financial platform</strong> — not just a credit card, but an end-to-end ecosystem where you earn, plan, book, and spend all in one app. The card is the entry point; the booking platform, experiences marketplace, and Scapia Store are the flywheel.
+      </p>
+      <p style="font-size:13px; line-height:1.75;">
+        Core bet: <strong style="color:var(--white);">Gen Z and Millennials</strong> want travel to feel like a lifestyle, not a transaction. Premium travel cards charge ₹5,000–10,000/year. Scapia gives zero fees, zero forex, and unlimited lounge access — and funds it through booking margins and ecosystem GMV.
+      </p>
+      <p style="font-size:13px; line-height:1.75; margin-top:12px; color:var(--muted);">
+        Even as Scapia raised the lounge spend threshold to ₹20K/month in early 2026, the core proposition remains powerful for frequent travellers. The next product layer must convert passive coin earners into active, loyal travellers.
+      </p>
+    </div>
+    <div>
+      <div class="card" style="height:100%;">
+        <h3>Core product surface</h3>
+        <ul class="clean">
+          <li><span class="dot"></span>10% Scapia Coins on regular spends (≈2% value, 5 coins = ₹1) · 20% on in-app travel bookings (≈4% value)</li>
+          <li><span class="dot"></span>Zero forex markup — Visa + RuPay dual card</li>
+          <li><span class="dot"></span>Unlimited domestic lounge access (₹20K/month spend)</li>
+          <li><span class="dot"></span>Airport Privileges — dine, shop, spa, lounge on departure</li>
+          <li><span class="dot"></span>Book flights, hotels, trains, buses, visas, experiences in-app</li>
+          <li><span class="dot"></span>Scapia Trips — curated group travel for solo travellers</li>
+          <li><span class="dot"></span>Scapia Store — travel gear with 20% coin earn + redeem</li>
+          <li><span class="dot"></span>Add-on cards for family with full Airport Privileges parity</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Market -->
+<section>
+  <div class="section-title">Market context</div>
+  <div class="pull-quote">"Gen Z and Millennials are turning travel into a guilt-free, all-pleasure experience — setting the stage for rapid growth in India." — Peak XV Partners</div>
+  <div class="three-col" style="margin-top:16px;">
+    <div class="card">
+      <h3>TAM</h3>
+      <p style="font-size:12px; color:var(--muted);">India's travel fintech revenue opportunity projected at $80–100B by 2030. Gen Z + Millennials now drive 50% of all new credit card issuance — a digital-first base Scapia is perfectly positioned for.</p>
+    </div>
+    <div class="card">
+      <h3>The gap Scapia fills</h3>
+      <p style="font-size:12px; color:var(--muted);">Premium travel cards (HDFC Infinia, Amex Platinum) cost ₹5,000–10,000/year and have complex points. Legacy free cards have weak travel perks. Scapia is the first card to offer premium travel benefits at zero cost.</p>
+    </div>
+    <div class="card">
+      <h3>Distribution moat</h3>
+      <p style="font-size:12px; color:var(--muted);">40% of Scapia's users are from beyond top-30 cities — the card is reaching travellers that legacy players never could. The RuPay variant extends this further via UPI-first behaviour.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Competitive landscape -->
+<section>
+  <div class="section-title">Competitive landscape</div>
+  <table class="moat-table">
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Positioning</th>
+        <th>Scapia's edge</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>HDFC Regalia / Infinia</td>
+        <td>Gold standard for travel cards — strong airline partnerships, international lounges, high rewards. But ₹5,000–10,000/year and income-gated.</td>
+        <td>Scapia wins on zero fees and zero forex. For a 24-year-old booking their first solo trip, Scapia is the obvious entry point.</td>
+      </tr>
+      <tr>
+        <td>OneCard / Slice</td>
+        <td>Digital-first credit cards targeting young users. Strong UX but no travel-specific rewards or booking ecosystem.</td>
+        <td>Scapia owns the travel identity. OneCard is a spend card; Scapia is a travel lifestyle card — entirely different emotional positioning.</td>
+      </tr>
+      <tr>
+        <td>Niyo Global</td>
+        <td>Zero forex debit card for international travel. Popular among backpackers and frequent flyers.</td>
+        <td>Scapia is a credit card — builds credit history while earning rewards. Niyo offers no rewards, no ecosystem, and no credit.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Strengths & Gaps -->
+<section>
+  <div class="section-title">Strengths & product gaps</div>
+  <div class="two-col">
+    <div>
+      <div class="sg-label sg-green">What's working</div>
+      <ul class="clean">
+        <li><span class="dot dot-green"></span>Viral word-of-mouth — card went mainstream without paid acquisition</li>
+        <li><span class="dot dot-green"></span>Airport Privileges are genuinely industry-first — no other free card has this</li>
+        <li><span class="dot dot-green"></span>App-first, clean UX — feels like a startup, not a bank</li>
+        <li><span class="dot dot-green"></span>Scapia Trips, Store, Experiences — ecosystem is expanding fast</li>
+        <li><span class="dot dot-green"></span>RuPay variant extends reach to UPI-native users and Tier II+</li>
+      </ul>
+    </div>
+    <div>
+      <div class="sg-label sg-red">Gaps to solve for</div>
+      <ul class="clean">
+        <li><span class="dot dot-red"></span>₹20K monthly spend threshold for lounge & airport privileges (doubled in Feb 2026) — hurts casual and irregular travellers</li>
+        <li><span class="dot dot-red"></span>Coin value & redemption confusion — "5 coins = ₹1" + travel-only lock-in makes accumulation feel abstract and trapped</li>
+        <li><span class="dot dot-red"></span>No rewards on insurance, utilities & select categories post-Feb 2026 devaluation</li>
+        <li><span class="dot dot-red"></span>Airport Privileges UX — pre-activation step + higher threshold causes drop-off for lighter users</li>
+        <li><span class="dot dot-red"></span>Lack of goal-setting or progress narrative — users earn coins with no visible destination or journey</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════ PART 2: PRODUCT BRIEF ═══════════ -->
+
+<hr class="page-break">
+<div class="page-break-label">✦ &nbsp; Product Brief &nbsp; ✦</div>
+
+<!-- Hero -->
+<div class="brief-hero">
+  <div class="eyebrow">APM Candidate · Product Brief · May 2026</div>
+  <h2>Scapia <em>Travel Goals</em></h2>
+  <p class="subtitle">Turning passive coin accumulation into an active, visible savings journey — so every coffee, commute, and grocery run feels like a step closer to the next trip.</p>
+  <div class="brief-meta">
+    <span class="meta-pill">Feature Proposal</span>
+    <span class="meta-pill">Retention + Engagement</span>
+    <span class="meta-pill">AI-First</span>
+    <span class="meta-pill">6–8 Week Build</span>
+  </div>
+</div>
+
+<!-- Problem -->
+<div class="brief-block">
+  <h3>The Problem</h3>
+  <p>Scapia's coin system is technically simple — earn 10%, redeem for travel — but <strong>emotionally invisible.</strong> Users accumulate coins passively with no sense of progress, no destination, and no narrative. The result: coins feel abstract, the app feels like a statement viewer between trips, and when it's time to redeem, users don't know if they have "enough" or what they can actually do.</p>
+  <div class="insight-box">
+    <p>"Still trying to understand the coins system… now with the ₹20K threshold, it feels even harder to justify."</p>
+    <div class="attr">— Reddit + App Store sentiment, early 2026</div>
+  </div>
+  <p style="margin-top:10px;">The trust signal is clear: users are watching. If Scapia doesn't give coins a narrative before they feel pointless, the comparison to CRED becomes a self-fulfilling prophecy. The fix isn't the coin math — it's giving coins a <strong>destination.</strong></p>
+</div>
+
+<!-- User insight -->
+<div class="brief-block">
+  <h3>User Insight</h3>
+  <p>Scapia's core user — a 24–32 year old urban professional — already <strong>mentally budgets for travel.</strong> They think "I want to do Bali in December" or "I want to hit Goa with the team in September." What they don't have is a tool that connects today's chai purchase to that trip. Every other financial product makes saving feel like sacrifice. Scapia has a rare chance to make it feel like <strong>anticipation.</strong></p>
+  <p style="margin-top:8px;">Rathinamurthy's post specifically called out <strong>AI-first thinking</strong> as a hiring requirement. This feature is exactly where AI earns its place — not as a gimmick, but as the engine that makes a personalised goal feel smart, alive, and achievable.</p>
+</div>
+
+<!-- Solution -->
+<div class="brief-block">
+  <h3>Proposed Solution — Scapia Travel Goals</h3>
+  <p>A lightweight in-app feature that lets users set a travel goal — a destination, a date, a rough budget — and then watches their coin balance grow toward it in real time. Three core flows:</p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="step-num">Step 01</div>
+      <h4>Set Your Goal</h4>
+      <p>Pick a destination (or let AI suggest one based on spend patterns + season). Set a travel month. Scapia estimates the coin cost of flights + hotels from your city.</p>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">Step 02</div>
+      <h4>Watch It Build</h4>
+      <p>A persistent "goal card" on the home screen shows % toward the trip. Every transaction nudges the bar. "Your Goa weekend is 34% funded." Coins are no longer abstract.</p>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">Step 03</div>
+      <h4>Smart Nudges</h4>
+      <p>AI sends contextual prompts — "₹3,200 away from your Bali flight. Dining out this weekend? Earn 2x if you pay with Scapia." Spend becomes intentional, not passive.</p>
+    </div>
+  </div>
+</div>
+
+<!-- AI layer -->
+<div class="brief-block">
+  <h3>Where AI Does the Heavy Lifting</h3>
+  <p>This isn't a manual savings tracker. The AI layer makes it genuinely useful:</p>
+  <ul class="clean" style="margin-top:10px;">
+    <li><span class="dot"></span><strong style="color:var(--white);">Goal suggestions</strong> — based on spend history, travel seasonality, and coin burn rate, the AI recommends a trip you could realistically fund in 3–6 months</li>
+    <li><span class="dot"></span><strong style="color:var(--white);">Dynamic pricing awareness</strong> — pulls live flight + hotel data for the goal destination and updates the coin target as prices move</li>
+    <li><span class="dot"></span><strong style="color:var(--white);">Spend optimisation nudges</strong> — identifies upcoming spend moments (rent, groceries, dining) where the user isn't maximising coin earn, and prompts the switch</li>
+    <li><span class="dot"></span><strong style="color:var(--white);">Goal completion celebration</strong> — when the user hits their coin target, the app surfaces a one-tap booking flow for that exact trip, pre-filled with coins applied</li>
+  </ul>
+</div>
+
+<!-- Metrics -->
+<div class="brief-block">
+  <h3>How I'd Measure Success</h3>
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="label">North Star</div>
+      <div class="value">Goals-to-bookings conversion rate</div>
+      <div class="why">Did setting a goal actually change redemption behaviour? This is the only metric that proves the feature isn't just a dashboard.</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Leading Indicator</div>
+      <div class="value">Weekly active users on goal card</div>
+      <div class="why">Are users checking in? If the goal card has high session frequency, it's working as a habit hook — the booking will follow.</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Guardrail</div>
+      <div class="value">Coin accumulation rate (non-nudged vs nudged cohort)</div>
+      <div class="why">Are nudges actually accelerating spend, or just annoying users? If nudged cohort accumulates meaningfully faster without unsubscribing, the AI is earning its keep.</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Business Metric</div>
+      <div class="value">In-app booking GMV from goal completions</div>
+      <div class="why">Scapia earns on booking margins. If goal completions drive booking, the feature pays for itself directly.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Resume tie -->
+<div class="brief-block">
+  <h3>Why I'd Own This</h3>
+  <p>This feature lives at the intersection of three things I've spent 1.5 years working on: <strong style="color:var(--white);">funnel behaviour analysis</strong> (finding where users disengage and why), <strong style="color:var(--white);">conversational and AI-assisted flows</strong> (designing intent-aware experiences that guide users to action), and <strong style="color:var(--white);">engagement mechanics</strong> (building feedback loops that make passive users feel invested). The Travel Goals feature isn't a moonshot — it's a focused, shippable product that solves a real user anxiety with a clear business return. That's the kind of problem I want to wake up thinking about.</p>
+  <div class="resume-tie">The coin confusion problem is structurally identical to mid-funnel drop-off in fintech — users who've shown intent but can't see the path to completion. I've diagnosed and fixed this pattern before. Travel Goals is the Scapia version of that fix.</div>
+</div>
+
+<!-- Fit -->
+<section style="margin-top:8px;">
+  <div class="section-title">Why Scapia, why this role</div>
+  <div class="fit-box">
+    <p>Rathinamurthy's post said he's looking for <strong>ownership, execution, analytical sharpness, and AI-first thinking.</strong> Scapia is at the exact inflection point where those things matter most — the card is proven, the ecosystem is expanding, and the next layer of product work is about retention, habit formation, and making every feature earn its place in a user's daily life. That's the product work I've been training for. I'd love to do it at Scapia.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill pill-gold">AI-assisted product thinking ✓</span>
+    <span class="pill pill-gold">Funnel + drop-off analysis ✓</span>
+    <span class="pill pill-gold">Engagement & habit mechanics ✓</span>
+    <span class="pill pill-green">B2C execution · fast cycles ✓</span>
+    <span class="pill pill-green">Cross-functional shipping ✓</span>
+    <span class="pill pill-muted">Fintech/credit domain — learning curve</span>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <span>Prepared by Aadya Varma · APM Application · scapia.cards</span>
+  <span>Sources: Peak XV, Elevation Capital, App Store, TechnoFino, LiveFromALounge (2025–2026)</span>
+</div>
+
+</body>
+</html>
